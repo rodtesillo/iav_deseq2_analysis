@@ -145,3 +145,21 @@ def write_results(filtered_genes, output_file):
 
     except Exception as e:
         print(f"Error al escribir el archivo: {e}")
+
+
+# Función para crear resumen
+def print_summary(filtered_genes):
+    """Imprime un resumen de los genes filtrados."""
+
+    # Contar genes por clasificación
+    upregulated_count = sum(1 for gene in filtered_genes if gene[3] == "upregulated")
+    downregulated_count = sum(
+        1 for gene in filtered_genes if gene[3] == "downregulated"
+    )
+    total_significant = len(filtered_genes)
+
+    # Imprimir resumen
+    print("RESUMEN DE ANÁLISIS DE EXPRESIÓN GÉNICA")
+    print(f"Genes significativos: {total_significant}")
+    print(f"Genes sobreexpresados: {upregulated_count}")
+    print(f"Genes subexpresados: {downregulated_count}")

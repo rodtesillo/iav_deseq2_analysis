@@ -4,7 +4,7 @@ import argparse
 
 
 # Crear funcion para filtrar significancia
-def is_significant(log2_fold_change, padj, lfc_threshold, padj_threshold):
+def is_significant(log2_fold_change, padj, lfc_threshold=1.0, padj_threshold=0.05):
     """Evalúa si un gen cumple los criterios de significancia."""
 
     if padj < padj_threshold and abs(log2_fold_change) >= lfc_threshold:

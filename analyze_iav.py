@@ -55,9 +55,9 @@ def load_deseq2_results(file_path):
 
                 try:
                     # Convertir valores numéricos
-                    gene_name = columns[0].strip()
-                    log2_fold_change = float(columns[1])
-                    padj = float(columns[2])
+                    gene_id = columns[0].strip()
+                    log2_fold_change = float(columns[2])
+                    padj = float(columns[6])
 
                     # Ignorar lineas invalidas
                     if not (
@@ -71,7 +71,7 @@ def load_deseq2_results(file_path):
                     # Si todo es válido, agregar a la lista
                     valid_genes.append(
                         {
-                            "gene_name": gene_name,
+                            "gene_id": gene_id,
                             "log2_fold_change": log2_fold_change,
                             "padj": padj,
                         }
@@ -100,3 +100,28 @@ def load_deseq2_results(file_path):
             print(f"   ... y {len(invalid_lines) - 5} más")
 
     return valid_genes
+
+
+# Crear función para crear una lista con los genes significativos
+def filter_genes(genes, lfc_threshold=1.0, padj_threshold=0.05):
+    """Mete los genes filtrados en una lista."""
+
+    # Crear una lista vacía para los resultados filtrados
+    filtered_results = []
+
+    # Recorrer cada gen
+    for gene in genes:
+        gene_id = gene["gene_id"]
+        log2_fold_change = gene["log2_fold_change"]
+        padj = gene["padj"]
+
+        # Aplicar is_significant()
+        if is_significant(log2_fold_change, padj, lfc_threshold, padj_threshold):
+
+            # Si es significativo, aplicar classify_gene()
+            classification = classify_gene(log2_fold_change)
+
+            # Guardar una tupla con el estado final
+            filtered_results.append((gene_id, log2_fold_change, padj, classification))
+
+    return filtered_results

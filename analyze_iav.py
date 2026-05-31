@@ -23,3 +23,80 @@ def classify_gene(log2_fold_change):
         return "downregulated"
     else:
         return "Sin cambios"
+
+
+# Crear funcción para abrir el archivo, leerlo y devolver una lista de genes validos
+def load_deseq2_results(file_path):
+    valid_genes = []
+    invalid_lines = []
+
+    try:
+        # Abrir archivo
+        with open(file_path, "r") as file:
+            # Leer línea por línea
+            for line_number, line in enumerate(file, start=1):
+
+                # Ignorar líneas vacías
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Ignorar encabezado
+                if line_number == 1:
+                    continue
+
+                # Separar columnas
+                columns = line.split("\t")
+
+                # Validar las 3 columnas de gene, log2fc y padj
+                if len(columns) < 3:
+                    invalid_lines.append((line_number, "Columnas insuficientes"))
+                    continue
+
+                try:
+                    # Convertir valores numéricos
+                    gene_name = columns[0].strip()
+                    log2_fold_change = float(columns[1])
+                    padj = float(columns[2])
+
+                    # Ignorar lineas invalidas
+                    if not (
+                        isinstance(log2_fold_change, float) and isinstance(padj, float)
+                    ):
+                        raise ValueError("Valores no numéricos")
+
+                    if padj < 0 or padj > 1:
+                        raise ValueError("p-valor fuera de rango [0, 1]")
+
+                    # Si todo es válido, agregar a la lista
+                    valid_genes.append(
+                        {
+                            "gene_name": gene_name,
+                            "log2_fold_change": log2_fold_change,
+                            "padj": padj,
+                        }
+                    )
+
+                # Ignorar líneas inválidas
+                except (ValueError, IndexError) as e:
+                    invalid_lines.append((line_number, str(e)))
+                    continue
+
+    except FileNotFoundError:
+        print(f"Error: No se encontró el archivo '{file_path}'")
+        return []
+
+    except Exception as e:
+        print(f"Error al leer el archivo: {e}")
+        return []
+
+    # Mostrar resumen
+    print(f"Genes válidos cargados: {len(valid_genes)}")
+    if invalid_lines:
+        print(f"Líneas ignoradas: {len(invalid_lines)}")
+        for line_num, reason in invalid_lines[:5]:  # Mostrar primeras 5
+            print(f"   Línea {line_num}: {reason}")
+        if len(invalid_lines) > 5:
+            print(f"   ... y {len(invalid_lines) - 5} más")
+
+    return valid_genes

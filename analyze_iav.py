@@ -1,6 +1,5 @@
 # Importar librerias
-import os
-import argparse
+import sys
 
 
 # Crear funcion para filtrar significancia
@@ -163,3 +162,55 @@ def print_summary(filtered_genes):
     print(f"Genes significativos: {total_significant}")
     print(f"Genes sobreexpresados: {upregulated_count}")
     print(f"Genes subexpresados: {downregulated_count}")
+
+
+# Función principal que cordinara las demas funciones
+def main():
+    """Función principal para cordinar las demas funciones."""
+
+    # Leer argumentos del usuario
+    if len(sys.argv) < 3:
+        print("Error: Argumentos insuficientes")
+        sys.exit(1)
+
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+
+    # 2. Definir umbrales
+    try:
+        lfc_threshold = float(sys.argv[3]) if len(sys.argv) > 3 else 1.0
+        padj_threshold = float(sys.argv[4]) if len(sys.argv) > 4 else 0.05
+    except ValueError:
+        print("Error: Los umbrales deben ser números")
+        sys.exit(1)
+
+    try:
+        # Llamar a load_deseq2_results()
+        genes = load_deseq2_results(input_file)
+
+        if not genes:
+            print("No se cargaron genes.")
+            sys.exit(1)
+
+        # Llamar a filter_genes()
+        filtered_genes = filter_genes(genes, lfc_threshold, padj_threshold)
+
+        if not filtered_genes:
+            print(
+                "No se encontraron genes significativos con los umbrales especificados."
+            )
+            sys.exit(1)
+
+        # Llamar a write_results()
+        write_results(filtered_genes, output_file)
+
+        # Llamar a print_summary()
+        print_summary(filtered_genes)
+
+    except Exception as e:
+        print(f"Error general: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

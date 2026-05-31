@@ -125,3 +125,23 @@ def filter_genes(genes, lfc_threshold=1.0, padj_threshold=0.05):
             filtered_results.append((gene_id, log2_fold_change, padj, classification))
 
     return filtered_results
+
+
+# Función para escribir los genes filtrados
+def write_results(filtered_genes, output_file):
+    """Escribe los genes filtrados en un archivo de salida."""
+
+    try:
+        with open(output_file, "w") as file:
+            # Escribir encabezado
+            file.write("gene\tlog2FoldChange\tpadj\n")
+
+            # Escribir cada gen filtrado
+            for gene_id, log2_fold_change, padj in filtered_genes:
+                file.write(f"{gene_id}\t{log2_fold_change}\t{padj}\n")
+
+        print(f"Archivo guardado: {output_file}")
+        print(f"Total de genes escritos: {len(filtered_genes)}")
+
+    except Exception as e:
+        print(f"Error al escribir el archivo: {e}")

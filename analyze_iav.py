@@ -1,5 +1,6 @@
 # Importar librerias
 import sys
+import argparse
 
 
 # Crear funcion para filtrar significancia
@@ -168,32 +169,53 @@ def print_summary(filtered_genes):
 def main():
     """Función principal para cordinar las demas funciones."""
 
-    # Leer argumentos del usuario
-    if len(sys.argv) < 3:
-        print("Error: Argumentos insuficientes")
+    # Crear parser
+    parser = argparse.ArgumentParser(
+        description="Análisis de expresión génica a partir de resultados DESeq2"
+    )
+
+    # Crear argumentos posicionales
+    parser.add_argument("input_file", help="Archivo de entrada con resultados DESeq2")
+    parser.add_argument(
+        "output_file", help="Archivo de salida con genes significativos"
+    )
+
+    # Crear argumentos opcionales
+    parser.add_argument(
+        "--lfc_threshold",
+        type=float,
+        default=1.0,
+        help="Umbral de log2 fold change (default: 1.0)",
+    )
+    parser.add_argument(
+        "--padj_threshold",
+        type=float,
+        default=0.05,
+        help="Umbral de p-valor ajustado (default: 0.05)",
+    )
+
+    # Parsear argumentos
+    args = parser.parse_args()
+
+    # Validar umbrales
+    if args.lfc_threshold <= 0:
+        print("Error: lfc_threshold debe ser mayor a 0")
         sys.exit(1)
 
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-
-    # 2. Definir umbrales
-    try:
-        lfc_threshold = float(sys.argv[3]) if len(sys.argv) > 3 else 1.0
-        padj_threshold = float(sys.argv[4]) if len(sys.argv) > 4 else 0.05
-    except ValueError:
-        print("Error: Los umbrales deben ser números")
+    if args.padj_threshold <= 0 or args.padj_threshold > 1:
+        print("Error: padj_threshold debe estar entre 0 y 1")
         sys.exit(1)
 
     try:
         # Llamar a load_deseq2_results()
-        genes = load_deseq2_results(input_file)
+        genes = load_deseq2_results(args.input_file)
 
         if not genes:
             print("No se cargaron genes.")
             sys.exit(1)
 
         # Llamar a filter_genes()
-        filtered_genes = filter_genes(genes, lfc_threshold, padj_threshold)
+        filtered_genes = filter_genes(genes, args.lfc_threshold, args.padj_threshold)
 
         if not filtered_genes:
             print(
@@ -202,7 +224,7 @@ def main():
             sys.exit(1)
 
         # Llamar a write_results()
-        write_results(filtered_genes, output_file)
+        write_results(filtered_genes, args.output_file)
 
         # Llamar a print_summary()
         print_summary(filtered_genes)

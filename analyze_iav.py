@@ -48,7 +48,7 @@ def load_deseq2_results(file_path):
                 columns = line.split("\t")
 
                 # Validar las 3 columnas de gene, log2fc y padj
-                if len(columns) < 3:
+                if len(columns) < 7:
                     invalid_lines.append((line_number, "Columnas insuficientes"))
                     continue
 
@@ -133,11 +133,11 @@ def write_results(filtered_genes, output_file):
     try:
         with open(output_file, "w") as file:
             # Escribir encabezado
-            file.write("gene\tlog2FoldChange\tpadj\n")
+            file.write("gene\tlog2FoldChange\tpadj\tstatus\n")
 
             # Escribir cada gen filtrado
-            for gene_id, log2_fold_change, padj in filtered_genes:
-                file.write(f"{gene_id}\t{log2_fold_change}\t{padj}\n")
+            for gene_id, log2_fold_change, padj, classification in filtered_genes:
+                file.write(f"{gene_id}\t{log2_fold_change}\t{padj}\t{classification}\n")
 
         print(f"Archivo guardado: {output_file}")
         print(f"Total de genes escritos: {len(filtered_genes)}")
